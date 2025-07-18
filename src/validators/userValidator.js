@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const { validate } = require('../helpers/validate');
 
 const registerRules = () => {
     return [
@@ -38,21 +39,6 @@ const registerRules = () => {
             .isMobilePhone('any', { strictMode: false }).withMessage('Invalid phone number format.')
     ];
 };
-
-const validate = (req, res, next) => {
-    const errors = validationResult(req);
-    if (errors.isEmpty()) {
-        return next();
-    }
-    
-    const extractedErrors = [];
-    errors.array().map(err => extractedErrors.push({ [err.path]: err.msg }));
-
-    return res.status(422).json({
-        errors: extractedErrors,
-    });
-};
-
 
 module.exports = {
     registerRules,
