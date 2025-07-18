@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 
-const Order = new mongoose.model(
-  "Order",
-  mongoose.Schema({
+const OrderSchema = new mongoose.Schema(
+  {
     client: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -38,12 +37,10 @@ const Order = new mongoose.model(
       type: Date,
       default: null,
     },
-
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  })
+  },
+  {
+    timestamps: true,
+  }
 );
-
-module.exports = mongoose.model("Order") || Order;
+const Order = mongoose.model("Order", OrderSchema);
+module.exports = Order;
