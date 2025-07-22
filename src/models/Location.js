@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const aragon2 = require('aragon2');
+const argon2 = require('argon2');
 
 
 const LocationSchema = new mongoose.Schema({
