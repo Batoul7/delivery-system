@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const { validate } = require('../helpers/validate');
 
 const registerRules = () => {
     return [
@@ -39,22 +40,58 @@ const registerRules = () => {
     ];
 };
 
-const validate = (req, res, next) => {
-    const errors = validationResult(req);
-    if (errors.isEmpty()) {
-        return next();
-    }
-    
-    const extractedErrors = [];
-    errors.array().map(err => extractedErrors.push({ [err.path]: err.msg }));
+const changePasswordRules = () => {
+    return [
+        body('oldPassword')
+            .notEmpty().withMessage('Old password is required.'),
 
-    return res.status(422).json({
-        errors: extractedErrors,
-    });
+        body('newPassword')
+            .isLength({ min: 8 }).withMessage('New password must be at least 8 characters long.')
+            .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/)
+            .withMessage('New password must contain an uppercase letter, a lowercase letter, a number, and a special character.')
+            .custom((value, { req }) => {
+                if (value === req.body.oldPassword) {
+                    throw new Error('New password cannot be the same as the old password.');
+                }
+                return true;
+            }),
+
+        body('passwordConfirmation')
+            .notEmpty().withMessage('Password confirmation is required.')
+            .custom((value, { req }) => {
+                if (value !== req.body.newPassword) {
+                    throw new Error('Password confirmation does not match the new password.');
+                }
+                return true;
+            }),
+    ];
 };
 
+const forgotPasswordRules = () => {
+    return [
+        body('email').isEmail().withMessage('Please provide a valid email.')
+    ];
+};
+
+const resetPasswordRules = () => {
+    return [
+        body('password')
+            .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long.'),
+        body('passwordConfirmation')
+            .notEmpty().withMessage('Password confirmation is required.')
+            .custom((value, { req }) => {
+                if (value !== req.body.password) {
+                    throw new Error('Password confirmation does not match the password.');
+                }
+                return true;
+            }),
+    ];
+};
 
 module.exports = {
     registerRules,
+    changePasswordRules,
     validate,
+    forgotPasswordRules,
+    resetPasswordRules,
 };

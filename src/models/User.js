@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const aragon2 = require('aragon2');
+const argon2 = require('argon2');
 
 
 const UserSchema = new mongoose.Schema({
@@ -37,7 +37,7 @@ const UserSchema = new mongoose.Schema({
         },
         coordinates: {
             type: [Number], // [Longitude, Latitude]
-            index: '2dsphere' // لتحسين أداء الاستعلامات الجغرافية
+            index: '2dsphere'
         }
     },
     averageRating: {
@@ -55,7 +55,7 @@ UserSchema.pre('save', async function(next) {
         return next();
     }
     try {
-        this.password = await aragon2.hash(this.password);
+        this.password = await argon2.hash(this.password);
         next();
     } catch (error) {
         next(error);
