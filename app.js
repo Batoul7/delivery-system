@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const connectDB = require('./src/config/db');
-const { errorHandler } = require('./src/middleware/errorMiddleware');
+const { errorHandler } = require('./src/middleware/error.middleware');
 const allApiRoutes = require('./src/routes/index');
 
 dotenv.config();

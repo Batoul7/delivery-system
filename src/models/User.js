@@ -36,8 +36,8 @@ const UserSchema = new mongoose.Schema({
             default: 'Point'
         },
         coordinates: {
-            type: [Number],
-            index: '2dsphere' 
+            type: [Number], // [Longitude, Latitude]
+            index: '2dsphere'
         }
     },
     averageRating: {
