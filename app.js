@@ -7,6 +7,8 @@ const connectDB = require('./src/config/db');
 const { errorHandler } = require('./src/middleware/error.middleware');
 const allApiRoutes = require('./src/routes/index');
 
+
+
 dotenv.config();
 
 connectDB();
