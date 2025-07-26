@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const {
@@ -6,6 +7,9 @@ const {
   updateOrder,
   updateOrderStatus,
   deleteOrder,
+  createOrder,
+  getAvailableOrders,
+  acceptOrder
 } = require("../controllers/order.controller");
 const {
   createOrderRules,
@@ -43,4 +47,19 @@ router.delete(
   deleteOrder
 );
 
+//  POST /orders/api
+//  Create new order (Client only)
+router.post('/orders/api', protect, authorize('Client'), createOrder);
+
+//  GET /available/orders/api
+//  Get available orders (Driver only)
+router.get('/available/orders/api', protect, authorize('Driver'), getAvailableOrders);
+
+//  PUT /accept/id/:id/orders/api
+//  Accept an order (Driver only)
+router.put('/accept/id/:id/orders/api', protect, authorize('Driver'), acceptOrder);
+
+
+
 module.exports = router;
+
