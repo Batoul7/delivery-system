@@ -1,4 +1,3 @@
-
 const express = require("express");
 const router = express.Router();
 const {
@@ -9,7 +8,7 @@ const {
   deleteOrder,
   createOrder,
   getAvailableOrders,
-  acceptOrder
+  acceptOrder,
 } = require("../controllers/order.controller");
 const {
   createOrderRules,
@@ -22,6 +21,10 @@ const { protect, authorize } = require("../middleware/auth.middleware");
 const handleId = require("../middleware/handleId.middleware");
 
 router.get("/", [protect, authorize("Admin")], validate, getAllOrder);
+
+//  GET /available/orders/api
+//  Get available orders (Driver only)
+router.get("/available", protect, authorize("Driver"), getAvailableOrders);
 
 router.get(
   "/:id",
@@ -49,17 +52,21 @@ router.delete(
 
 //  POST /orders/api
 //  Create new order (Client only)
-router.post('/orders/api', protect, authorize('Client'), createOrder);
-
-//  GET /available/orders/api
-//  Get available orders (Driver only)
-router.get('/available/orders/api', protect, authorize('Driver'), getAvailableOrders);
+router.post(
+  "/",
+  protect,
+  authorize("Client"),
+  createOrderRules(),
+  validate,
+  createOrder
+);
 
 //  PUT /accept/id/:id/orders/api
 //  Accept an order (Driver only)
-router.put('/accept/id/:id/orders/api', protect, authorize('Driver'), acceptOrder);
-
-
+router.put(
+  "/accept/:id",
+  [protect, authorize("Driver"), handleId],
+  acceptOrder
+);
 
 module.exports = router;
-
