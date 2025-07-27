@@ -41,14 +41,15 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-
+  
+   const tokenPayload = { id: user._id, email: user.email, role: user.role };
   if (user && (await aragon2.verify(user.password, password))) {
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token: generateToken(user._id),
+      token: generateToken(tokenPayload),
     });
   } else {
     res.status(401);
