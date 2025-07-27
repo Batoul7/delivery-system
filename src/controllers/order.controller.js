@@ -20,23 +20,23 @@ const getAllOrder = asyncHandler(async (req, res) => {
 
 const getOneOrder = asyncHandler(async (req, res) => {
   const id = req.id;
-  const userRoulr = req.user.role;
+  //const userRoulr = req.user.role;
   const s = req.user.id;
   const order = await Order.findById(id)
     .populate("client", "name email")
     .populate("driver", "name email");
 
   if (!order) {
-    return res.status(404).json({ message: "no orders" });
+    return res.status(404).json({ message: "Order not found" });
   }
 
-  if (
-    userRoulr !== "Admin" &&
-    order.client.toString() !== s &&
-    order.driver?.toString() !== s
-  ) {
-    return res.status(403).json({ message: "Access denied" });
-  }
+  // if (
+  //   userRoulr !== "Admin" &&
+  //   order.client.toString() !== s &&
+  //   order.driver?.toString() !== s
+  // ) {
+  //   return res.status(403).json({ message: "Access denied" });
+  // }
 
   res.status(200).json(order);
 });
@@ -89,7 +89,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({
       message:
-        "Invalid status. Only 'in_transit' or 'delivered'or 'pending' or 'cancelled' or 'in_progress' are allowed for drivers.",
+        "Invalid status. Only 'delivered'or 'pending' or 'cancelled' or 'in_progress' are allowed for drivers.",
     });
   }
 
@@ -111,12 +111,12 @@ const deleteOrder = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Order deleted successfully" });
 });
 
-
 //  Create a new delivery order
 //  POST /orders/api
 //  Private (Client only)
 const createOrder = asyncHandler(async (req, res) => {
-  const { pickupAddress, deliveryAddress, description, expectedDeliveryTime } = req.body;
+  const { pickupAddress, deliveryAddress, description, expectedDeliveryTime } =
+    req.body;
 
   const newOrder = await Order.create({
     client: req.user._id,
@@ -133,7 +133,10 @@ const createOrder = asyncHandler(async (req, res) => {
 //   GET /available/orders/api
 //   Private (Driver only)
 const getAvailableOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ status: 'pending' }).populate('client', 'name');
+  const orders = await Order.find({ status: "pending" }).populate(
+    "client",
+    "name"
+  );
   res.status(200).json(orders);
 });
 
@@ -145,25 +148,21 @@ const acceptOrder = asyncHandler(async (req, res) => {
 
   if (!order) {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
-  if (order.status !== 'pending') {
+  if (order.status !== "pending") {
     res.status(400);
-    throw new Error('Order is already accepted or processed');
+    throw new Error("Order is already accepted or processed");
   }
 
   // Assign the order to the driver and change status
   order.driver = req.user._id;
-  order.status = 'accepted';
+  order.status = "accepted";
   await order.save();
 
-  res.status(200).json({ message: 'Order accepted', order });
+  res.status(200).json({ message: "Order accepted", order });
 });
-
-
-
-
 
 module.exports = {
   getAllOrder,
@@ -175,4 +174,3 @@ module.exports = {
   getAvailableOrders,
   acceptOrder,
 };
-
