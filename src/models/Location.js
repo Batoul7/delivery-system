@@ -1,38 +1,32 @@
 const mongoose = require('mongoose');
-const argon2 = require('argon2');
 
-
-const LocationSchema = new mongoose.Schema({
-    driver: {
-    type: mongoose.Schema.Types.ObjectId,
+const locationSchema = new mongoose.Schema({
+  driverId: { 
+    type: mongoose.Schema.Types.ObjectId, 
     ref: 'User',
-    required: true
+    required: true 
   },
-  order: {
-    type: mongoose.Schema.Types.ObjectId,
+  orderId: { 
+    type: mongoose.Schema.Types.ObjectId, 
     ref: 'Order',
-    required: true
+    required: true 
   },
-  coordinates: {
+  location: {
     type: {
       type: String,
       enum: ['Point'],
-      required: true
+      required: true,
+      default: 'Point'
     },
     coordinates: {
       type: [Number],
       required: true
     }
   },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-    timestamps: true
+  timestamp: { type: Date, default: Date.now }
 });
-LocationSchema.index({ coordinates: '2dsphere' });
 
-const Location = mongoose.model('User', LocationSchema);
+locationSchema.index({ location: '2dsphere' }); // إنشاء الفهرس
 
+const Location = mongoose.model('Location', locationSchema);
 module.exports = Location;
