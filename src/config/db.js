@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const seedAdmin = require("../helpers/seedAdmin");
 
 const connectDB = async () => {
   try {
@@ -8,9 +9,13 @@ const connectDB = async () => {
     });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // create admin
+    await seedAdmin();
+
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    process.exit(1);
+    process.exit(1); 
   }
 };
 
