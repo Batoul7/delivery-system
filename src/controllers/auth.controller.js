@@ -11,6 +11,11 @@ const sendEmail = require("../helpers/sendEmail");
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, phoneNumber, role, location } = req.body;
 
+  if (role && role === 'Admin') {
+    res.status(403);
+    throw new Error('Admin registration is not allowed.');
+  }
+
   const user = await User.create({
     name,
     email,
