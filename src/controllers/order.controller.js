@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Order = require("../models/Order");
+const { getIO } = require("../socket");
 
 const getAllOrder = asyncHandler(async (req, res) => {
   const { city, status, driver } = req.query;
@@ -115,7 +116,7 @@ const deleteOrder = asyncHandler(async (req, res) => {
 //  POST /orders/api
 //  Private (Client only)
 const createOrder = asyncHandler(async (req, res) => {
-  const { pickupAddress, deliveryAddress, description, expectedDeliveryTime } =
+  const { pickupAddress, deliveryAddress, description, expectedDeliveryTime, latitude, longitude } =
     req.body;
 
   const newOrder = await Order.create({
@@ -124,7 +125,15 @@ const createOrder = asyncHandler(async (req, res) => {
     deliveryAddress,
     description,
     expectedDeliveryTime,
+    deliveryLocation: {
+      type: 'Point',
+      coordinates: [longitude, latitude]
+    }
   });
+
+  const io = getIO();
+  io.to('drivers_room').emit('newOrderAvailable', newOrder);
+  console.log('Notified drivers about a new order.');
 
   res.status(201).json(newOrder);
 });
@@ -150,18 +159,25 @@ const acceptOrder = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Order not found");
   }
-
   if (order.status !== "pending") {
     res.status(400);
     throw new Error("Order is already accepted or processed");
   }
 
-  // Assign the order to the driver and change status
   order.driver = req.user._id;
   order.status = "accepted";
   await order.save();
+  
+  const updatedOrder = await Order.findById(req.params.id).populate('driver', 'name phone');
 
-  res.status(200).json({ message: "Order accepted", order });
+  const io = getIO();
+  io.to(req.params.id).emit('orderAccepted', {
+      message: `تم قبول طلبك من قبل المندوب ${updatedOrder.driver.name}`,
+      order: updatedOrder
+  });
+  console.log(` Notified client about order acceptance for order: ${req.params.id}`);
+
+  res.status(200).json({ message: "Order accepted", order: updatedOrder });
 });
 
 module.exports = {

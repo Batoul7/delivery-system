@@ -1,3 +1,5 @@
+// src/models/Order.js
+
 const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema(
@@ -20,6 +22,17 @@ const OrderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    deliveryLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: [0, 0]
+      }
+    },
     description: {
       type: String,
       default: "",
@@ -37,10 +50,18 @@ const OrderSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    proximityNotified: {
+      type: Boolean,
+      default: false,
+    }
   },
   {
     timestamps: true,
   }
 );
+
+//  فهرس جغرافي لتمكين حساب المسافات
+OrderSchema.index({ deliveryLocation: '2dsphere' });
+
 const Order = mongoose.model("Order", OrderSchema);
 module.exports = Order;
