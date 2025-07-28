@@ -1,7 +1,7 @@
 const Location = require('../models/Location');
+const asyncHandler = require('express-async-handler');
 
-const updateLocation = async (req, res) => {
-  try {
+const updateLocation = asyncHandler(async (req, res) => {
     const driverId = req.user.id;
     const { latitude, longitude, orderId } = req.body;
 
@@ -22,17 +22,12 @@ const updateLocation = async (req, res) => {
       message: 'Location updated', 
       location: newLocation 
     });
-  } catch (err) {
-    console.error('Update location error:', err);
-    res.status(500).json({ 
-      message: 'Internal server error',
-      error: err.message 
-    });
-  }
-};
+})
 
-const getLocation = async (req, res) => {
-  try {
+
+const getLocation = asyncHandler(
+async (req, res) => {
+  
     const driverId = req.params.driverId;
     const location = await Location.findOne({ driverId })
                                   .sort({ timestamp: -1 });
@@ -45,18 +40,15 @@ const getLocation = async (req, res) => {
       latitude: location.location.coordinates[1],
       longitude: location.location.coordinates[0],
       timestamp: location.timestamp
-    });
-  } catch (err) {
-    console.error('Get location error:', err);
-    res.status(500).json({ 
-      message: 'Internal server error',
-      error: err.message 
-    });
-  }
-};
+    }); 
+})
 
-const saveLocationToDB = async (data) => {
-  try {
+
+
+const saveLocationToDB = asyncHandler(
+
+async (data) => {
+  
     await Location.create({
       driverId: data.driverId,
       orderId: data.orderId,
@@ -65,10 +57,10 @@ const saveLocationToDB = async (data) => {
         coordinates: [data.longitude, data.latitude]
       }
     });
-  } catch (error) {
-    console.error('Failed to save location:', error);
-  }
-};
+  
+}
+)
+
 
 module.exports = {
   updateLocation,
