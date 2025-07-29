@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { addRating, getDriverRatings } = require('../controllers/ratingController');
+const { addRating, getDriverRatings } = require('../controllers/rating.controller');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 
