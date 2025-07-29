@@ -22,8 +22,6 @@ const handleId = require("../middleware/handleId.middleware");
 
 router.get("/", [protect, authorize("Admin")], validate, getAllOrder);
 
-//  GET /available/orders/api
-//  Get available orders (Driver only)
 router.get("/available", protect, authorize("Driver"), getAvailableOrders);
 
 router.get(
@@ -34,7 +32,7 @@ router.get(
 
 router.put(
   "/:id",
-  [protect, authorize("Admin"), updateOrderRules(), validate, handleId],
+  [protect, authorize("Client"), updateOrderRules(), validate, handleId],
   updateOrder
 );
 
@@ -50,8 +48,6 @@ router.delete(
   deleteOrder
 );
 
-//  POST /orders/api
-//  Create new order (Client only)
 router.post(
   "/",
   protect,
@@ -61,8 +57,6 @@ router.post(
   createOrder
 );
 
-//  PUT /accept/id/:id/orders/api
-//  Accept an order (Driver only)
 router.put(
   "/accept/:id",
   [protect, authorize("Driver"), handleId],
