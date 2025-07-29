@@ -1,9 +1,10 @@
 const asyncHandler = require('express-async-handler');
 const Rating = require('../models/Rating');
 const Order = require('../models/Order');
+const User = require('../models/User');
+
 
 //  Add a new rating
-//  POST /ratings/api
 //  Private (Client only)
 const addRating = asyncHandler(async (req, res) => {
   const { order, driver, stars, comment } = req.body;
@@ -16,7 +17,7 @@ const addRating = asyncHandler(async (req, res) => {
   }
 
   // Optional: Ensure the order is marked as 'Delivered'
-  if (existingOrder.status !== 'Delivered') {
+  if (existingOrder.status !== 'delivered') {
     res.status(400);
     throw new Error('You can only rate delivered orders');
   }
@@ -37,16 +38,38 @@ const addRating = asyncHandler(async (req, res) => {
     comment,
   });
 
-  res.status(201).json(rating);
+  // Update driver's average rating
+  const ratings = await Rating.find({ driver });
+
+  const totalStars = ratings.reduce((acc, item) => acc + item.stars, 0);
+  const avg = totalStars / ratings.length;
+
+  await User.findByIdAndUpdate(driver, {
+    averageRating: avg.toFixed(2),
+  });
+
+ res.status(201).json({
+  message: 'Rating added successfully',
+  rating,
+  averageRating: avg.toFixed(2),
+});
 });
 
 //  Get all ratings for a specific driver
-//  GET /driverId/:driver/ratings/api
+//  GET /:driverId
 //  Public
 const getDriverRatings = asyncHandler(async (req, res) => {
   // Fetch all ratings by driver ID, also populate client info
   const ratings = await Rating.find({ driver: req.params.driver }).populate('client', 'name');
-  res.status(200).json(ratings);
+
+ const driverData = await User.findById(req.params.driver).select('averageRating');
+
+ res.status(200).json({
+    driverId: req.params.driver,
+    totalRatings: ratings.length,
+    averageRating: driverData?.averageRating || 0,
+    ratings,
+  });
 });
 
 module.exports = {
