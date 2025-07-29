@@ -25,13 +25,15 @@ const registerUser = asyncHandler(async (req, res) => {
     location,
   });
 
+  const tokenPayload = { id: user._id, email: user.email, role: user.role };
+
   if (user) {
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token: generateToken(user._id),
+      token: generateToken(tokenPayload),
     });
   } else {
     res.status(400);
@@ -146,7 +148,8 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  const token = generateToken(user._id);
+  const tokenPayload = { id: user._id, email: user.email, role: user.role };
+  const token = generateToken(tokenPayload);
   res.status(200).json({ success: true, token });
 });
 
