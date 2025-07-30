@@ -9,6 +9,6 @@ router.post('/', protect, authorize('Client'), addRating);
 
  
 //  Get all ratings for a specific driver (Public access)
-router.get('/:driverId', getDriverRatings);
+router.get('/driver/:driverId', getDriverRatings);
 
 module.exports = router;
