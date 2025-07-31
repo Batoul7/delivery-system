@@ -1,48 +1,84 @@
+const asyncHandler = require("express-async-handler");
 const User = require("../models/User");
 const Log = require("../models/Log");
+const logger = require("../helpers/logger");
 
-// إدارة المستخدمين - GET /users/admin
-exports.getUsers = async (req, res) => {
-  try {
+// Get all users
+exports.getUsers = asyncHandler(async (req, res) => {
     const users = await User.find({}).select("-password");
-    await Log.create({
-      action: "GET_USERS",
-      user: req.user.id,
-      ip: req.ip,
-    });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: "Server Error" });
-  }
-};
 
-// حذف مستخدم - DELETE /users/admin/:id
-exports.deleteUser = async (req, res) => {
-  try {
+    logger.log('ACCESS', {
+        user: req.user.id,
+        ip: req.ip,
+        status: 'SUCCESS',
+        details: { resource: 'all_users_list' }
+    });
+
+    res.json(users);
+});
+
+//  DELETE /api/admin/users/:id
+exports.deleteUser = asyncHandler(async (req, res, next) => {
     const user = await User.findByIdAndDelete(req.params.id);
+    
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+        logger.logDataChange(
+            req.user.id,
+            'User',
+            req.params.id,
+            'DELETE',
+            { error: 'User not found' },
+            req.ip,
+            'FAILURE' 
+        );
+        res.status(404);
+        throw new Error("User not found");
     }
 
-    await Log.create({
-      action: "DELETE_USER",
-      user: req.user.id,
-      details: { deletedUser: req.params.id },
-      ip: req.ip,
-    });
+    logger.logDataChange(
+        req.user.id,
+        'User',
+        req.params.id,
+        'DELETE',
+        { deletedEmail: user.email },
+        req.ip
+    );
 
     res.json({ message: "User deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server Error" });
-  }
-};
+});
 
-// عرض سجلات النظام - GET /logs/admin
-exports.getLogs = async (req, res) => {
-  try {
-    const logs = await Log.find().populate("user", "username email");
-    res.json(logs);
-  } catch (err) {
-    res.status(500).json({ message: "Server Error" });
-  }
-};
+// GET /api/admin/logs
+exports.getLogs = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 50, user, action, status } = req.query;
+
+    const filter = {};
+    if (user) filter.user = user;
+    if (action) filter.action = action;
+    if (status) filter.status = status;
+
+    const logs = await Log.find(filter)
+        .populate("user", "name email")
+        .sort({ createdAt: -1 })
+        .limit(parseInt(limit))
+        .skip((page - 1) * limit);
+
+    const total = await Log.countDocuments(filter);
+
+    logger.log('ACCESS', {
+        user: req.user.id,
+        ip: req.ip,
+        status: 'SUCCESS',
+        details: { resource: 'system_logs', filterApplied: req.query }
+    });
+
+    res.json({
+        success: true,
+        data: logs,
+        pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            pages: Math.ceil(total / limit),
+        },
+    });
+});
