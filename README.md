@@ -1,5 +1,4 @@
 Delivery Management System - Backend API
-## Documentation in Postman https://documenter.getpostman.com/view/38662914/2sB34kDdvu
 
 ## Description
 
@@ -109,15 +108,55 @@ These routes require admin privileges for access.
 
 ---
 
-# Orders APIS 
+# 📦 Orders APIs
+
+---
+
+## 🔄 Table of Contents
+
+| No. | Section |
+|-----|---------|
+| 1 | [Order Schema](#-order-schema) |
+| 2 | [Create New Order](#-create-new-order) |
+| 3 | [Get All Orders (Admin)](#-get-all-orders-admin) |
+| 4 | [Get Available Orders (Driver)](#-get-available-orders-driver) |
+| 5 | [Get One Order](#-get-one-order) |
+| 6 | [Update Order (Client)](#-update-order-client) |
+| 7 | [Accept Order (Driver)](#-accept-order-driver) |
+| 8 | [Update Order Status (Driver)](#-update-order-status-driver) |
+| 9 | [Delete Order (Admin)](#-delete-order-admin) |
+
+---
+
+## 🧩 Order Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `client` | ObjectId | Refers to the user who created the order (required). |
+| `driver` | ObjectId | Refers to the assigned driver (default: null). |
+| `pickupAddress` | String | Address of pickup location (required). |
+| `deliveryAddress` | String | Address of delivery location (required). |
+| `deliveryLocation` | Object | GeoJSON point (type, coordinates). |
+| `description` | String | Optional description of the order. |
+| `expectedDeliveryTime` | Date | Expected delivery date/time (required). |
+| `status` | String | Order status: `pending`, `accepted`, `in_progress`, `delivered`, `cancelled`. |
+| `completedAt` | Date | Timestamp when the order was completed. |
+| `proximityNotified` | Boolean | Indicates if proximity alert was sent. |
+| `createdAt` | Date | Timestamp of order creation. |
+| `updatedAt` | Date | Timestamp of last update. |
+
+---
 
 ## 📝 Create New Order
 
-- **Authorized Role:** Client
-- **Method:** `POST`
-- **Endpoint:** `/api/orders`
-- **Description:** Creates a new order.
-- **Request Body:**
+| Property | Value |
+|----------|-------|
+| **Authorized Role** | Client |
+| **Method** | `POST` |
+| **Endpoint** | `/api/orders` |
+| **Description** | Creates a new order. |
+
+**Request Body Example:**
 ```json
 {
   "pickupAddress": "Damascus - Al-Midan",
@@ -135,50 +174,63 @@ These routes require admin privileges for access.
 
 ## 📋 Get All Orders (Admin)
 
-- **Method:** `GET`
-- **Endpoint:** `/api/orders`
-- **Description:** Retrieves all orders with optional filters (status, driver, city).
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Endpoint** | `/api/orders` |
+| **Description** | Retrieves all orders with optional filters (status, driver, city). |
 
 ---
 
 ## 📂 Get Available Orders (Driver)
 
-- **Method:** `GET`
-- **Endpoint:** `/api/orders/available`
-- **Description:** Lists all unassigned orders with status `pending`.
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Endpoint** | `/api/orders/available` |
+| **Description** | Lists all unassigned orders with status `pending`. |
 
 ---
 
-## 🔍 Get one Order
+## 🔍 Get One Order
 
-- **Method:** `GET`
-- **Endpoint:** `/api/orders/:id`
-- **Description:** Retrieves details for a specific order by ID.
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Endpoint** | `/api/orders/:id` |
+| **Description** | Retrieves details of a specific order by ID. |
 
 ---
 
-## ✏️ Update Order (Admin)
+## ✏️ Update Order (Client)
 
-- **Method:** `PUT`
-- **Endpoint:** `/api/orders/:id`
-- **Description:** Allows Client to update order data .
+| Property | Value |
+|----------|-------|
+| **Method** | `PUT` |
+| **Endpoint** | `/api/orders/:id` |
+| **Description** | Allows the client to update order data. |
 
 ---
 
 ## ✅ Accept Order (Driver)
 
-- **Method:** `PUT`
-- **Endpoint:** `/api/orders/:id/accept`
-- **Description:** Allows a driver to accept an order, changing status to `accepted`.
+| Property | Value |
+|----------|-------|
+| **Method** | `PUT` |
+| **Endpoint** | `/api/orders/:id/accept` |
+| **Description** | Allows a driver to accept an order, updating status to `accepted`. |
 
 ---
 
 ## 🔄 Update Order Status (Driver)
 
-- **Method:** `PUT`
-- **Endpoint:** `/api/orders/:id/status`
-- **Description:** Update the current status of the order.
-- **Example Body:**
+| Property | Value |
+|----------|-------|
+| **Method** | `PUT` |
+| **Endpoint** | `/api/orders/:id/status` |
+| **Description** | Updates the current status of an order. |
+
+**Example Body:**
 ```json
 {
   "status": "in_progress"
@@ -189,9 +241,11 @@ These routes require admin privileges for access.
 
 ## 🗑️ Delete Order (Admin)
 
-- **Method:** `DELETE`
-- **Endpoint:** `/api/orders/:id`
-- **Description:** Allows admin to delete an order by ID.
+| Property | Value |
+|----------|-------|
+| **Method** | `DELETE` |
+| **Endpoint** | `/api/orders/:id` |
+| **Description** | Allows the admin to delete an order by ID. |
 
 ---
 
