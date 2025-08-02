@@ -3,76 +3,79 @@ const Rating = require('../models/Rating');
 const Order = require('../models/Order');
 const User = require('../models/User');
 
-
-//  Add a new rating
-//  Private (Client only)
+// Add a new rating
+// POST /api/ratings
+// Private (Client only)
 const addRating = asyncHandler(async (req, res) => {
-  const { order, driver, stars, comment } = req.body;
+  const { orderId, driverId, stars, comment } = req.body;
 
-  // Check if the order exists and belongs to the authenticated client
-  const existingOrder = await Order.findById(order);
+  // 1. Check if order exists and belongs to current user
+  const existingOrder = await Order.findById(orderId);
   if (!existingOrder || existingOrder.client.toString() !== req.user._id.toString()) {
     res.status(403);
     throw new Error('You can only rate your own completed orders');
   }
 
-  // Optional: Ensure the order is marked as 'Delivered'
+  // 2. Ensure order is delivered
   if (existingOrder.status !== 'delivered') {
     res.status(400);
     throw new Error('You can only rate delivered orders');
   }
 
-  // Check if the rating for this order already exists
-  const existingRating = await Rating.findOne({ order });
+  // 3. Prevent duplicate ratings
+  const existingRating = await Rating.findOne({ orderId });
   if (existingRating) {
     res.status(400);
     throw new Error('This order has already been rated');
   }
 
-  // Create the new rating
+  // 4. Create rating
   const rating = await Rating.create({
-    order,
-    driver,
-    client: req.user._id,
+    orderId,
+    driverId,
+    clientId: req.user._id,
     stars,
     comment,
   });
 
-  // Update driver's average rating
-  const ratings = await Rating.find({ driver });
-
-  const totalStars = ratings.reduce((acc, item) => acc + item.stars, 0);
+  // 5. Recalculate average rating for driver
+  const ratings = await Rating.find({ driverId });
+  const totalStars = ratings.reduce((acc, r) => acc + r.stars, 0);
   const avg = totalStars / ratings.length;
 
-  await User.findByIdAndUpdate(driver, {
+  await User.findByIdAndUpdate(driverId, {
     averageRating: avg.toFixed(2),
   });
 
- res.status(201).json({
-  message: 'Rating added successfully',
-  rating,
-  averageRating: avg.toFixed(2),
-});
+  // 6. Respond with success
+  res.status(201).json({
+    message: 'Rating added successfully',
+    rating,
+    averageRating: avg.toFixed(2),
+  });
 });
 
-//  Get all ratings for a specific driver
-//  GET /:driverId
-//  Public
+// Get all ratings for a specific driver
+// GET /api/ratings/driver/:driverId
+// Public
 const getDriverRatings = asyncHandler(async (req, res) => {
-  // Fetch all ratings by driver ID, also populate client info
-  const ratings = await Rating.find({ driver: req.params.driver }).populate('client', 'name');
+  const ratings = await Rating.find({ driverId: req.params.driverId }).populate('clientId', 'name');
 
- const driverData = await User.findById(req.params.driver).select('averageRating');
+  let averageRating = 0;
+  if (ratings.length > 0) {
+    const total = ratings.reduce((acc, r) => acc + r.stars, 0);
+    averageRating = (total / ratings.length).toFixed(2);
+  }
 
- res.status(200).json({
-    driverId: req.params.driver,
+  res.status(200).json({
+    driverId: req.params.driverId,
     totalRatings: ratings.length,
-    averageRating: driverData?.averageRating || 0,
+    averageRating,
     ratings,
   });
 });
 
 module.exports = {
   addRating,
-  getDriverRatings
+  getDriverRatings,
 };
