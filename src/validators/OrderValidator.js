@@ -35,6 +35,21 @@ const createOrderRules = () => {
       .trim()
       .isLength({ max: 500 })
       .withMessage("Description must be less than 500 characters."),
+
+    // --- الإضافة الرئيسية هنا ---
+    // إضافة قواعد التحقق لخطوط الطول والعرض
+    body("latitude")
+      .notEmpty()
+      .withMessage("Latitude is required.")
+      .isFloat({ min: -90, max: 90 })
+      .withMessage("Latitude must be a valid number between -90 and 90."),
+
+    body("longitude")
+      .notEmpty()
+      .withMessage("Longitude is required.")
+      .isFloat({ min: -180, max: 180 })
+      .withMessage("Longitude must be a valid number between -180 and 180."),
+    // --- نهاية الإضافة ---
   ];
 };
 const updateOrderRules = () => {
