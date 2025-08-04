@@ -12,6 +12,6 @@ router.use("/admin", adminRoutes);
 router.use("/users", userRoutes);
 router.use("/orders", orderRoutes);
 router.use("/location", locationRoutes);
-router.use("/rating", ratingRoutes);
+router.use("/ratings", ratingRoutes);
 
 module.exports = router;
