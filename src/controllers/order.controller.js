@@ -1,7 +1,9 @@
 const asyncHandler = require("express-async-handler");
 const Order = require("../models/Order");
 const { getIO } = require("../socket");
+const logger = require("../helpers/logger");
 
+//  View all orders with filtering
 const getAllOrder = asyncHandler(async (req, res) => {
   const { city, status, driver } = req.query;
   let filter = {};
@@ -13,12 +15,15 @@ const getAllOrder = asyncHandler(async (req, res) => {
   const orders = await Order.find(filter)
     .populate("client", "name email")
     .populate("driver", "name email");
-  if (orders.length == 0) {
+
+  if (orders.length === 0) {
     return res.status(200).json({ message: "no orders" });
   }
+
   res.status(200).json(orders);
 });
 
+// View one order
 const getOneOrder = asyncHandler(async (req, res) => {
   const id = req.id;
   const order = await Order.findById(id)
@@ -32,6 +37,7 @@ const getOneOrder = asyncHandler(async (req, res) => {
   res.status(200).json(order);
 });
 
+// update Data Order
 const updateOrder = asyncHandler(async (req, res) => {
   const id = req.id;
   const order = await Order.findByIdAndUpdate(
@@ -47,9 +53,19 @@ const updateOrder = asyncHandler(async (req, res) => {
 
   if (!order) return res.status(404).json({ message: "Order not found" });
 
+  await logger.logDataChange(
+    req.user._id,
+    "Order",
+    order._id,
+    "UPDATE",
+    { updatedFields: req.body },
+    req.ip
+  );
+
   res.status(200).json({ message: "update Successfully", order });
 });
 
+// Update order status
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const id = req.id;
   const order = await Order.findById(id);
@@ -66,18 +82,12 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   const { status } = req.body;
+  const allowedStatuses = ["in_progress", "delivered"];
 
-  const allowedStatuses = [
-    "pending",
-    "accepted",
-    "in_progress",
-    "delivered",
-    "cancelled",
-  ];
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({
       message:
-        "Invalid status. Only 'delivered'or 'pending' or 'cancelled' or 'in_progress' are allowed for drivers.",
+        "Invalid status. Only 'in_progress' or 'delivered' are allowed for drivers.",
     });
   }
 
@@ -89,16 +99,37 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
   await order.save();
 
+  await logger.logDataChange(
+    req.user._id,
+    "Order",
+    order._id,
+    "UPDATE",
+    { newStatus: order.status },
+    req.ip
+  );
+
   res.status(200).json({ message: "Order status updated", order });
 });
 
+// Delete order
 const deleteOrder = asyncHandler(async (req, res) => {
   const id = req.id;
   const order = await Order.findByIdAndDelete(id);
   if (!order) return res.status(404).json({ message: "Order not found" });
+
+  await logger.logDataChange(
+    req.user._id,
+    "Order",
+    order._id,
+    "DELETE",
+    { deletedOrderId: order._id },
+    req.ip
+  );
+
   res.status(200).json({ message: "Order deleted successfully" });
 });
 
+// create order
 const createOrder = asyncHandler(async (req, res) => {
   const {
     pickupAddress,
@@ -121,6 +152,19 @@ const createOrder = asyncHandler(async (req, res) => {
     },
   });
 
+  await logger.logDataChange(
+    req.user._id,
+    "Order",
+    newOrder._id,
+    "CREATE",
+    {
+      pickupAddress,
+      deliveryAddress,
+      expectedDeliveryTime,
+    },
+    req.ip
+  );
+
   const io = getIO();
   io.to("drivers_room").emit("newOrderAvailable", newOrder);
   console.log("Notified drivers about a new order.");
@@ -128,6 +172,7 @@ const createOrder = asyncHandler(async (req, res) => {
   res.status(201).json(newOrder);
 });
 
+//  View available orders for the driver
 const getAvailableOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ status: "pending" }).populate(
     "client",
@@ -136,17 +181,18 @@ const getAvailableOrders = asyncHandler(async (req, res) => {
   res.status(200).json(orders);
 });
 
+//  Acceptance order by the driver
 const acceptOrder = asyncHandler(async (req, res) => {
   const id = req.id;
   const order = await Order.findById(id);
 
   if (!order) {
-    res.status(404);
-    throw new Error("Order not found");
+    return res.status(404).json({ message: "Order not found" });
   }
   if (order.status !== "pending") {
-    res.status(400);
-    throw new Error("Order is already accepted or processed");
+    return res
+      .status(400)
+      .json({ message: "Order is already accepted or processed" });
   }
 
   order.driver = req.user._id;
@@ -160,10 +206,19 @@ const acceptOrder = asyncHandler(async (req, res) => {
 
   const io = getIO();
   io.to(id).emit("orderAccepted", {
-    message: `تم قبول طلبك من قبل المندوب ${updatedOrder.driver.name}`,
+    message: `Your request has been accepted by the driver.${updatedOrder.driver.name}`,
     order: updatedOrder,
   });
-  console.log(` Notified client about order acceptance for order: ${id}`);
+  console.log(`Notified client about order acceptance for order: ${id}`);
+
+  await logger.logDataChange(
+    req.user._id,
+    "Order",
+    order._id,
+    "UPDATE",
+    { acceptedBy: req.user._id },
+    req.ip
+  );
 
   res.status(200).json({ message: "Order accepted", order: updatedOrder });
 });
