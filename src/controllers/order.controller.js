@@ -5,22 +5,32 @@ const logger = require("../helpers/logger");
 
 //  View all orders with filtering
 const getAllOrder = asyncHandler(async (req, res) => {
-  const { city, status, driver } = req.query;
+  const { city, status, driver, page = 1, limit = 10 } = req.query;
+
   let filter = {};
 
   if (city) filter.deliveryAddress = { $regex: city, $options: "i" };
   if (status) filter.status = status;
   if (driver) filter.driver = driver;
 
+  const pageNumber = parseInt(page, 10);
+  const pageSize = parseInt(limit, 10);
+
+  const totalOrders = await Order.countDocuments(filter);
+
   const orders = await Order.find(filter)
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize)
     .populate("client", "name email")
     .populate("driver", "name email");
 
-  if (orders.length === 0) {
-    return res.status(200).json({ message: "no orders" });
-  }
-
-  res.status(200).json(orders);
+  res.status(200).json({
+    total: totalOrders,
+    currentPage: pageNumber,
+    totalPages: Math.ceil(totalOrders / pageSize),
+    count: orders.length,
+    orders,
+  });
 });
 
 // View one order
@@ -82,12 +92,12 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   const { status } = req.body;
-  const allowedStatuses = ["in_progress", "delivered"];
+  const allowedStatuses = ["pending", "in_progress", "delivered", "cancelled"];
 
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({
       message:
-        "Invalid status. Only 'in_progress' or 'delivered' are allowed for drivers.",
+        "Invalid status. Only 'delivered'or 'pending' or 'cancelled' or 'in_progress' are allowed for drivers.",
     });
   }
 

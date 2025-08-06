@@ -91,9 +91,9 @@ const updateOrderStatusRules = () => {
     body("status")
       .notEmpty()
       .withMessage("Status is required.")
-      .isIn(["pending", "accepted", "in_progress", "delivered", "cancelled"])
+      .isIn(["pending", "in_progress", "delivered", "cancelled"])
       .withMessage(
-        "Invalid status. Only 'delivered'or 'pending' or 'accepted' or 'cancelled' or 'in_progress' are allowed for drivers."
+        "Invalid status. Only 'delivered'or 'pending' or 'cancelled' or 'in_progress' are allowed for drivers."
       ),
   ];
 };
