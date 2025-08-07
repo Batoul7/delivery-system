@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/User");
 const Log = require("../models/Log");
 const logger = require("../helpers/logger");
+const { archiveAndClearLogs } = require("../services/archiveService");
 
 // Get all users
 exports.getUsers = asyncHandler(async (req, res) => {
@@ -80,5 +81,17 @@ exports.getLogs = asyncHandler(async (req, res) => {
             total,
             pages: Math.ceil(total / limit),
         },
+    });
+});
+
+// POST /api/admin/logs/archive
+// Description: Starts the process of archiving and then deleting all logs.
+exports.archiveLogs = asyncHandler(async (req, res) => {
+
+    archiveAndClearLogs();
+
+    res.status(202).json({
+        success: true,
+        message: "Log archival process has been started. This may take a few minutes. Logs will be deleted upon successful archival.",
     });
 });

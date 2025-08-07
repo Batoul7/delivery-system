@@ -1,7 +1,7 @@
 // update by batoul
 const express = require('express');
 const router = express.Router();
-const { getUsers, deleteUser, getLogs } = require('../controllers/admin.controller');
+const { getUsers, deleteUser, getLogs, archiveLogs, deleteLogs } = require('../controllers/admin.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 const handleId = require('../middleware/handleId.middleware');
 
@@ -14,6 +14,9 @@ router.delete('/users/:id', protect, authorize('Admin'), handleId, deleteUser);
 
 // GET /api/admin/logs 
 router.get('/logs', protect, authorize('Admin'), getLogs);
+
+// POST /api/admin/logs/archive  
+router.post('/logs/archive', protect, authorize('Admin'), archiveLogs);
 
 module.exports = router;
 

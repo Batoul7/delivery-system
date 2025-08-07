@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-
 const { addRating, getDriverRatings } = require('../controllers/rating.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
-const handleId = require('../middleware/handleId.middleware');
 
 const {
   createRatingRules,
@@ -26,9 +24,9 @@ router.post(
 // GET /api/ratings/driver/:driverId
 router.get(
   '/driver/:driverId',
-  handleId,                      
-  getDriverRatingsRules(),       
-  validate,                      
+  protect,
+  getDriverRatingsRules(),
+  validate,
   getDriverRatings
 );
 
