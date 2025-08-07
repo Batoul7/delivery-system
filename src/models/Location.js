@@ -26,7 +26,7 @@ const locationSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
-locationSchema.index({ location: '2dsphere' }); // إنشاء الفهرس
+locationSchema.index({ location: '2dsphere' });
 
 const Location = mongoose.model('Location', locationSchema);
 module.exports = Location;

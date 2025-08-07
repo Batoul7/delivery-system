@@ -1,18 +1,46 @@
 Delivery Management System - Backend API
 
-## Description
+## 📜 Description
 
-A backend API for the delivery management system. This part of the project provides the core functionality for authentication, user management, and permissions.
+This project is the backend API for a comprehensive Delivery Management System. It provides the core functionalities for authentication, user management, order processing, and real-time communication.
+
+
+## ✨ Key Features
 
 - **Authentication:** Register new users (clients or drivers) and log in securely.
 - **User Management:** Users can view and update their profile information.
 - **Admin Management:** The admin has full privileges to view and manage all users in the system.
+- **Order Management:** Create, track, and update the status of deliveries.
+- **Real-time Communication:** Utilizes WebSockets for live driver location tracking and instant order status updates.
 
+## 🛠️ Tech Stack
 The backend is built using **Node.js**, **Express**, and **MongoDB** with **JWT**-based authentication to secure the routes.
+
+## 📂 Project Structure
+The project follows a standard feature-based structure to keep the codebase organized and scalable.
+
+DELIVERY-SYSTEM/
+├── node_modules/
+├── src/
+│   ├── config/         # Environment variables and config files
+│   ├── controllers/    # Request handling logic for each route
+│   ├── helpers/        # Helper functions used across the app
+│   ├── middleware/     # Custom Express middleware (e.g., auth, error handling)
+│   ├── models/         # Mongoose schemas for database models
+│   ├── routes/         # API route definitions
+│   ├── utils/          # Utility functions (e.g., email service, API features)
+│   └── validators/     # Input validation rules using express-validator
+│   └── socket.js       # Socket.IO connection setup
+├── .env                # Environment variables (not committed)
+├── .gitignore          # Files and folders to be ignored by Git
+├── app.js              # Express app setup and middleware configuration
+├── package.json        # Project metadata and dependencies
+├── README.md           # This file (description)
+└── server.js           # The main entry point that starts the server
 
 ---
 
-## Installation
+## 🚀 Local Setup
 
 Follow these steps to run the project locally:
 
@@ -26,8 +54,8 @@ npm install
 3. **Create a .env file:**
 NODE_ENV=development
 PORT=4000
-MONGO_URI=mongodb+srv://YOUR_NAME:YOUR_PASSWORD@cluster0.u1mv7ig.mongodb.net/delivery_project?retryWrites=true&w=majority&appName=Cluster0
-JWT_SECRET=174ea878765acd75165ffa0d86650fb639d460fd85a570d4ebddc4247fcc19f0
+MONGO_URL=URL_ATLAS_DATABASE
+JWT_SECRET=your_super_secret_jwt_key_here
 
 # Mailtrap Credentials for Development
 EMAIL_HOST=sandbox.smtp.mailtrap.io
@@ -47,7 +75,8 @@ npm run watch
 ---
 
 
-## Used Libraries & Packages
+## 📦 Used Libraries & Packages
+
 | Library                | Description                                                   |
 | ---------------------- | ------------------------------------------------------------- |
 | `express`              | Web framework for building APIs.                              |
@@ -68,7 +97,7 @@ npm run watch
 
 ---
 
-##  API Endpoints Summary
+# 🔑 API Endpoints Summary
 
 ## Authentication
 
@@ -85,7 +114,7 @@ npm run watch
 
 ---
 
-## User Management 
+## 👤 User Management 
 
 | Method | Endpoint           | Description              | Auth Required |
 |--------|--------------------|--------------------------|---------------|
@@ -96,9 +125,7 @@ npm run watch
 ---
 
 
-## Admin Management
-
-These routes require admin privileges for access.
+## 👤 Admin Management
 
 | Method | Endpoint              | Description                 | Auth Required (Admin)? |
 | ------ | --------------------  | --------------------------- | ---------------------- |
@@ -108,53 +135,35 @@ These routes require admin privileges for access.
 
 ---
 
-# 📦 Orders APIs
-
----
-
-## 🔄 Table of Contents
-
-| No. | Section |
-|-----|---------|
-| 1 | [Order Schema](#-order-schema) |
-| 2 | [Create New Order](#-create-new-order) |
-| 3 | [Get All Orders (Admin)](#-get-all-orders-admin) |
-| 4 | [Get Available Orders (Driver)](#-get-available-orders-driver) |
-| 5 | [Get One Order](#-get-one-order) |
-| 6 | [Update Order (Client)](#-update-order-client) |
-| 7 | [Accept Order (Driver)](#-accept-order-driver) |
-| 8 | [Update Order Status (Driver)](#-update-order-status-driver) |
-| 9 | [Delete Order (Admin)](#-delete-order-admin) |
-
----
+## 📦 Orders APIs
 
 ## 🧩 Order Schema
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `client` | ObjectId | Refers to the user who created the order (required). |
-| `driver` | ObjectId | Refers to the assigned driver (default: null). |
-| `pickupAddress` | String | Address of pickup location (required). |
-| `deliveryAddress` | String | Address of delivery location (required). |
-| `deliveryLocation` | Object | GeoJSON point (type, coordinates). |
-| `description` | String | Optional description of the order. |
-| `expectedDeliveryTime` | Date | Expected delivery date/time (required). |
-| `status` | String | Order status: `pending`, `accepted`, `in_progress`, `delivered`, `cancelled`. |
-| `completedAt` | Date | Timestamp when the order was completed. |
-| `proximityNotified` | Boolean | Indicates if proximity alert was sent. |
-| `createdAt` | Date | Timestamp of order creation. |
-| `updatedAt` | Date | Timestamp of last update. |
+| Field                  | Type     | Description                                                                   |
+|------------------------|----------|-------------------------------------------------------------------------------|
+| `client`               | ObjectId | Refers to the user who created the order (required).                          |
+| `driver`               | ObjectId | Refers to the assigned driver (default: null).                                |
+| `pickupAddress`        | String   | Address of pickup location (required).                                        |
+| `deliveryAddress`      | String   | Address of delivery location (required).                                      |
+| `deliveryLocation`     | Object   | GeoJSON point (type, coordinates).                                            |
+| `description`          | String   | Optional description of the order.                                            |
+| `expectedDeliveryTime` | Date     | Expected delivery date/time (required).                                       |
+| `status`               | String   | Order status: `pending`, `accepted`, `in_progress`, `delivered`, `cancelled`. |
+| `completedAt`          | Date     | Timestamp when the order was completed.                                       |
+| `proximityNotified`    | Boolean  | Indicates if proximity alert was sent.                                        |
+| `createdAt`            | Date     | Timestamp of order creation.                                                  |
+| `updatedAt`            | Date     | Timestamp of last update.                                                     |
 
 ---
 
 ## 📝 Create New Order
 
-| Property | Value |
-|----------|-------|
-| **Authorized Role** | Client |
-| **Method** | `POST` |
-| **Endpoint** | `/api/orders` |
-| **Description** | Creates a new order. |
+| Property            | Value                |
+|---------------------|----------------------|
+| **Authorized Role** | Client               |
+| **Method**          | `POST`               |
+| **Endpoint**        | `/api/orders`        |
+| **Description**     | Creates a new order. |
 
 **Request Body Example:**
 ```json
@@ -174,60 +183,60 @@ These routes require admin privileges for access.
 
 ## 📋 Get All Orders (Admin)
 
-| Property | Value |
-|----------|-------|
-| **Method** | `GET` |
-| **Endpoint** | `/api/orders` |
+| Property        | Value                                                              |
+|-----------------|--------------------------------------------------------------------|
+| **Method**      | `GET`                                                              |
+| **Endpoint**    | `/api/orders`                                                      |
 | **Description** | Retrieves all orders with optional filters (status, driver, city). |
 
 ---
 
 ## 📂 Get Available Orders (Driver)
 
-| Property | Value |
-|----------|-------|
-| **Method** | `GET` |
-| **Endpoint** | `/api/orders/available` |
+| Property        | Value                                              |
+|-----------------|----------------------------------------------------|
+| **Method**      | `GET`                                              |
+| **Endpoint**    | `/api/orders/available`                            |
 | **Description** | Lists all unassigned orders with status `pending`. |
 
 ---
 
 ## 🔍 Get One Order
 
-| Property | Value |
-|----------|-------|
-| **Method** | `GET` |
-| **Endpoint** | `/api/orders/:id` |
+| Property        | Value                                        |
+|-----------------|----------------------------------------------|
+| **Method**      | `GET`                                        |
+| **Endpoint**    | `/api/orders/:id`                            |
 | **Description** | Retrieves details of a specific order by ID. |
 
 ---
 
 ## ✏️ Update Order (Client)
 
-| Property | Value |
-|----------|-------|
-| **Method** | `PUT` |
-| **Endpoint** | `/api/orders/:id` |
+| Property        | Value                                   |
+|-----------------|-----------------------------------------|
+| **Method**      | `PUT`                                   |
+| **Endpoint**    | `/api/orders/:id`                       |
 | **Description** | Allows the client to update order data. |
 
 ---
 
 ## ✅ Accept Order (Driver)
 
-| Property | Value |
-|----------|-------|
-| **Method** | `PUT` |
-| **Endpoint** | `/api/orders/:id/accept` |
+| Property        | Value                                                              |
+|-----------------|--------------------------------------------------------------------|
+| **Method**      | `PUT`                                                              |
+| **Endpoint**    | `/api/orders/:id/accept`                                           |
 | **Description** | Allows a driver to accept an order, updating status to `accepted`. |
 
 ---
 
 ## 🔄 Update Order Status (Driver)
 
-| Property | Value |
-|----------|-------|
-| **Method** | `PUT` |
-| **Endpoint** | `/api/orders/:id/status` |
+| Property        | Value                                   |
+|-----------------|-----------------------------------------|
+| **Method**      | `PUT`                                   |
+| **Endpoint**    | `/api/orders/:id/status`                |
 | **Description** | Updates the current status of an order. |
 
 **Example Body:**
@@ -241,72 +250,20 @@ These routes require admin privileges for access.
 
 ## 🗑️ Delete Order (Admin)
 
-| Property | Value |
-|----------|-------|
-| **Method** | `DELETE` |
-| **Endpoint** | `/api/orders/:id` |
+| Property        | Value                                      |
+|-----------------|--------------------------------------------|
+| **Method**      | `DELETE`                                   |
+| **Endpoint**    | `/api/orders/:id`                          |
 | **Description** | Allows the admin to delete an order by ID. |
 
 ---
 
-# Ratings APIs
+# 📊 Ratings APIs
 
-## 📝 Add New Rating (Client)
-
-**Authorized Role:** Client
-**Method:** POST
-**Endpoint:** /api/ratings
-**Description:** Allows the client to submit a rating after a delivered order
-**Request Body:**
-```json
-{
-  "order": "11",
-  "driver": "11",
-  "stars": 4.5,
-  "comment": "خدمة ممتازة وسريعة"
-}
-```
-**Response:**
-```json
-{
-  "message": "Rating added successfully",
-  "rating": {
-    "_id": "...",
-    "stars": 4.5,
-    "comment": "خدمة ممتازة وسريعة",
-    ...
-  },
-  "averageRating": "4.75"
-}
-```
-
----
-
-
-# 📊 Get All Ratings for a Driver
-
-**Method:** GET
-**Endpoint:** /api/ratings/driver/:driverId
-**Description:** Retrieves all ratings associated with a specific driver, including the average rating.
-**Response:**
-```json
-{
-  "driverId": "33",
-  "totalRatings": 4,
-  "averageRating": "4.50",
-  "ratings": [
-    {
-      "_id": "...",
-      "stars": 4,
-      "comment": "جيد جداً",
-      "client": {
-        "_id": "...",
-        "name": "Ali"
-      }
-    }
-  ]
-}
-```
+| Method | Endpoint                       | Description                                   | Auth Required |
+|--------|--------------------------------|-----------------------------------------------|---------------|
+| POST   | /api/ratings                   | Add a new rating for a driver after delivery  | yes (Client)  |
+| GET    | /api/ratings/driver/:driverId  | Get all ratings for a specific driver.        | yes           |
 
 
 ---
@@ -328,14 +285,14 @@ We use a room-based system to segment communication channels:
 ---
 
 ## Key WebSocket Events
-| Event Name             | Emitter       | Listener   | Room           | Description                                                                 | 
-| -----------------------| --------------| ---------- | ---------------| ----------------------------------------------------------------------------|
-| `joinOrderRoom`        | Client/Driver | Server     | `orderId`      | User requests to join a specific order's room                               |
-| `newOrderAvailable`    | Server        | Drivers    | `drivers_room` | Broadcasts new order object to all drivers                                  |
-| `orderAccepted`        | Server        | Client     | `orderId`      | Notifies client their order was accepted                                    |
-| `updateDriverLocation` | Driver        | Server     | `orderId`      | Driver sends new coordinates (lat, lng) with Global                         |
-| `driverLocationUpdated`| Server        | Client     | `orderId`      | Relays driver's coordinates to relevant client                              |
-| `driverApproaching`    | Server        | Client     | `orderId`      | Triggers when driver is within predefined radius (e.g., 1km) of destination |
+| Event Name             | Emitter       | Listener | Room           | Description                                                                 |
+| -----------------------| --------------| ---------| ---------------| ----------------------------------------------------------------------------|
+| `joinOrderRoom`        | Client/Driver | Server   | `orderId`      | User requests to join a specific order's room                               |
+| `newOrderAvailable`    | Server        | Drivers  | `drivers_room` | Broadcasts new order object to all drivers                                  |
+| `orderAccepted`        | Server        | Client   | `orderId`      | Notifies client their order was accepted                                    |
+| `updateDriverLocation` | Driver        | Server   | `orderId`      | Driver sends new coordinates (lat, lng) with Global                         |
+| `driverLocationUpdated`| Server        | Client   | `orderId`      | Relays driver's coordinates to relevant client                              |
+| `driverApproaching`    | Server        | Client   | `orderId`      | Triggers when driver is within predefined radius (e.g., 1km) of destination |
 
 ---
 

@@ -1,5 +1,3 @@
-// src/models/Order.js
-
 const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema(
@@ -60,7 +58,7 @@ const OrderSchema = new mongoose.Schema(
   }
 );
 
-//  فهرس جغرافي لتمكين حساب المسافات
+// Geographic index to enable distance calculations
 OrderSchema.index({ deliveryLocation: '2dsphere' });
 
 const Order = mongoose.model("Order", OrderSchema);

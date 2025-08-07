@@ -3,13 +3,13 @@ const { validate } = require("../helpers/validate");
 
 const createRatingRules = () => {
   return [
-    body("driver")
+    body("driverId")
       .notEmpty()
       .withMessage("Driver ID is required.")
       .isMongoId()
       .withMessage("Invalid Driver ID."),
 
-    body("order")
+    body("orderId")
       .notEmpty()
       .withMessage("Order ID is required.")
       .isMongoId()
@@ -34,7 +34,7 @@ const createRatingRules = () => {
 
 const getDriverRatingsRules = () => {
   return [
-    param("driver")
+    param("driverId")
       .notEmpty()
       .withMessage("Driver ID parameter is required.")
       .isMongoId()

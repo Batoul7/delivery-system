@@ -5,7 +5,6 @@ const logSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: true,
     },
     action: {
       type: String,
@@ -18,6 +17,7 @@ const logSchema = new mongoose.Schema(
         "DELETE",
         "ACCESS",
         "ERROR",
+        'SYSTEM'
       ],
     },
 
@@ -35,11 +35,10 @@ const logSchema = new mongoose.Schema(
       type: String,
       validate: {
           validator: function (v) {
-              // --- تعديل هنا: تجاهل التحقق إذا كان IP هو ::1 ---
               if (!v || v === '::1') return true; 
               return /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(v);
           },
-          message: props => `${props.value} ليس عنوان IP صالحًا!`
+          message: props => `${props.value} is not a valid IP address!`
       },
   },
 },

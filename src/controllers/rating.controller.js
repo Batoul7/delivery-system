@@ -12,6 +12,7 @@ const addRating = asyncHandler(async (req, res) => {
 
   // 1. Check if order exists and belongs to current user
   const existingOrder = await Order.findById(orderId);
+  
   if (!existingOrder || existingOrder.client.toString() !== req.user._id.toString()) {
     await logger.log('ACCESS', {
       user: req.user._id,
@@ -90,7 +91,7 @@ const addRating = asyncHandler(async (req, res) => {
 // GET /api/ratings/driver/:driverId
 // Public
 const getDriverRatings = asyncHandler(async (req, res) => {
-  const ratings = await Rating.find({ driverId: req.params.driverId }).populate('clientId', 'name');
+  const ratings = await Rating.find({ driverId: req.params.driverId }).populate('driverId', 'name');
 
   let averageRating = 0;
   if (ratings.length > 0) {

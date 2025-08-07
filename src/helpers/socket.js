@@ -1,6 +1,4 @@
-/**
-* This module is responsible for all the WebSocket logic.
-*/
+// This module is responsible for all the WebSocket logic.
 
 const { saveLocationToDB } = require('../controllers/loaction.controller');
 const Order = require('../models/Order'); 
@@ -32,10 +30,10 @@ module.exports = function(io) {
         }
         console.log(` User connected: (ID: ${user.id}) (Role: ${user.role})`);
 
-       // --- The drivers joining their own private room ---
+       // The drivers joining their own private room 
         if (user.role === 'Driver') {
             socket.join('drivers_room');
-            console.log(`🚗 Driver ${user.id} joined the drivers_room.`);
+            console.log(`Driver ${user.id} joined the drivers_room.`);
         }
 
         // Joining a private room for the request (for the driver client)        
@@ -56,7 +54,7 @@ module.exports = function(io) {
             // Broadcast site update to the client            
             io.to(orderId).emit('driverLocationUpdated', { orderId, latitude, longitude });
 
-            // --- Checking for proximity ---            
+            // Checking for proximity          
             try {
                 const order = await Order.findById(orderId);
 
