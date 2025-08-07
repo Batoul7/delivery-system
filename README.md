@@ -127,11 +127,12 @@ npm run watch
 
 ## 👤 Admin Management
 
-| Method | Endpoint              | Description                 | Auth Required (Admin)? |
-| ------ | --------------------  | --------------------------- | ---------------------- |
-| GET    | /api/admin/users      | View and manage all users.  | Yes (Admin only)       |
-| DELETE | /api/admin/users/:id  | Delete a specific user.     | Yes (Admin only)       |
-| GET    | /api/admin/logs       | View all logs               | Yes (Admin only)       |
+| Method | Endpoint                | Description                  | Auth Required (Admin)? |
+| ------ | ------------------------| ---------------------------- | ---------------------- |
+| GET    | /api/admin/users        | View and manage all users.   | Yes (Admin only)       |
+| DELETE | /api/admin/users/:id    | Delete a specific user.      | Yes (Admin only)       |
+| GET    | /api/admin/logs         | View all logs                | Yes (Admin only)       |
+| POST   | /api/admin/logs/archive | Archive and then delete logs | Yes (Admin only)       |
 
 ---
 
